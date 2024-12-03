@@ -20,6 +20,7 @@ export default function AlocacaoMemoria() {
   const [processos, setProcessos] = useState<Processo[]>([]);
   const [inputParticao, setInputParticao] = useState({ id: "", tamanho: "", estado: "livre" });
   const [inputProcesso, setInputProcesso] = useState({ id: "", chegada: "", tamanho: "", duracao: "" });
+  const [estrategia, setEstrategia] = useState<"First-Fit" | "Best-Fit" | "Worst-Fit">("First-Fit");
 
   const handleAdicionarParticao = () => {
     const { id, tamanho, estado } = inputParticao;
@@ -97,9 +98,7 @@ export default function AlocacaoMemoria() {
     return timeline;
   };
 
-  const timelineFirstFit = simularAlocacao("First-Fit");
-  const timelineBestFit = simularAlocacao("Best-Fit");
-  const timelineWorstFit = simularAlocacao("Worst-Fit");
+  const timeline = simularAlocacao(estrategia);
 
   const renderTimeline = (timeline: { [key: number]: Particao[] }) => {
     return (
@@ -117,7 +116,7 @@ export default function AlocacaoMemoria() {
             <Text style={styles.cell}>{tempo}</Text>
             {timeline[tempo].map((particao) => (
               <Text key={particao.id} style={styles.cell}>
-                {particao.disponivel ? "Livre" : `Ocupado (${particao.ocupadoAte})`}
+                {particao.disponivel ? "Livre" : `Ocupado (${particao.tamanho} GB)`}
               </Text>
             ))}
           </View>
@@ -191,15 +190,18 @@ export default function AlocacaoMemoria() {
           <Text style={styles.buttonText}>Adicionar Processo</Text>
         </TouchableOpacity>
       </View>
-      <Text style={styles.subtitle}>Simulação - First-Fit</Text>
-      <Text style={styles.description}>Procura a primeira partição que caiba.</Text>
-      {renderTimeline(timelineFirstFit)}
-      <Text style={styles.subtitle}>Simulação - Best-Fit</Text>
-      <Text style={styles.description}>Procura a menor partição disponível que caiba.</Text>
-      {renderTimeline(timelineBestFit)}
-      <Text style={styles.subtitle}>Simulação - Worst-Fit</Text>
-      <Text style={styles.description}>Procura a maior partição disponível que caiba.</Text>
-      {renderTimeline(timelineWorstFit)}
+      <Text style={styles.subtitle}>Escolha a Estratégia de Alocação</Text>
+      <Picker
+        selectedValue={estrategia}
+        style={styles.picker}
+        onValueChange={(itemValue) => setEstrategia(itemValue)}
+      >
+        <Picker.Item label="First-Fit" value="First-Fit" />
+        <Picker.Item label="Best-Fit" value="Best-Fit" />
+        <Picker.Item label="Worst-Fit" value="Worst-Fit" />
+      </Picker>
+      <Text style={styles.subtitle}>Simulação - {estrategia}</Text>
+      {renderTimeline(timeline)}
     </ScrollView>
   );
 }

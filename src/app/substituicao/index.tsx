@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import { useState, useEffect } from "react";
+import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Alert, SafeAreaView, Animated } from "react-native";
 import SubstitutionTable from "../../components/SubstitutionTable";
 
 interface Pagina {
@@ -12,6 +12,15 @@ export default function Substituicao() {
   const [novaPagina, setNovaPagina] = useState<string>(""); // Entrada de nova página
   const [algoritmo, setAlgoritmo] = useState<string>("FIFO"); // Algoritmo selecionado
   const [log, setLog] = useState<string[]>([]); // Histórico de substituições
+  const fadeAnim = useState(new Animated.Value(0))[0]; // Inicializa animação
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeAnim]);
 
   // Adicionar uma nova página na memória
   const adicionarPagina = () => {
@@ -65,80 +74,121 @@ export default function Substituicao() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Substituição de Páginas</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="ID da Página (ex: P1)"
-        value={novaPagina}
-        onChangeText={setNovaPagina}
-      />
-      <Button title="Adicionar Página" onPress={adicionarPagina} />
-      
-      <View style={styles.buttonsContainer}>
-        <TouchableOpacity
-          style={[styles.button, algoritmo === "FIFO" && styles.selectedButton]}
-          onPress={() => setAlgoritmo("FIFO")}
-        >
-          <Text style={styles.buttonText}>FIFO</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, algoritmo === "LRU" && styles.selectedButton]}
-          onPress={() => setAlgoritmo("LRU")}
-        >
-          <Text style={styles.buttonText}>LRU</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, algoritmo === "NRU" && styles.selectedButton]}
-          onPress={() => setAlgoritmo("NRU")}
-        >
-          <Text style={styles.buttonText}>NRU</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, algoritmo === "Segunda Chance" && styles.selectedButton]}
-          onPress={() => setAlgoritmo("Segunda Chance")}
-        >
-          <Text style={styles.buttonText}>Segunda Chance</Text>
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView style={styles.container}>
+      <Animated.View style={{ ...styles.container, opacity: fadeAnim }}>
+        <Text style={styles.title}>Substituição de Páginas</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="ID da Página (ex: P1)"
+          value={novaPagina}
+          onChangeText={setNovaPagina}
+        />
+        <Button title="Adicionar Página" onPress={adicionarPagina} />
+        
+        <Button title="Substituir Página" onPress={substituirPagina} />
 
-      <Button title="Substituir Página" onPress={substituirPagina} />
+        <Text style={styles.subtitle}>Memória Atual</Text>
+        <SubstitutionTable data={memoria} />
 
-      <Text style={styles.subtitle}>Memória Atual</Text>
-      <SubstitutionTable data={memoria} />
+        <Text style={styles.subtitle}>Histórico de Substituições</Text>
+        <View style={styles.logContainer}>
+          {log.map((entry, index) => (
+            <Text key={index} style={styles.logText}>{entry}</Text>
+          ))}
+        </View>
 
-      <Text style={styles.subtitle}>Histórico de Substituições</Text>
-      <View style={styles.logContainer}>
-        {log.map((entry, index) => (
-          <Text key={index} style={styles.logText}>{entry}</Text>
-        ))}
-      </View>
-    </View>
+        <View style={styles.buttonsContainer}>
+          <TouchableOpacity
+            style={[styles.button, algoritmo === "FIFO" && styles.selectedButton]}
+            onPress={() => setAlgoritmo("FIFO")}
+          >
+            <Text style={styles.buttonText}>FIFO</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, algoritmo === "LRU" && styles.selectedButton]}
+            onPress={() => setAlgoritmo("LRU")}
+          >
+            <Text style={styles.buttonText}>LRU</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, algoritmo === "NRU" && styles.selectedButton]}
+            onPress={() => setAlgoritmo("NRU")}
+          >
+            <Text style={styles.buttonText}>NRU</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, algoritmo === "Segunda Chance" && styles.selectedButton]}
+            onPress={() => setAlgoritmo("Segunda Chance")}
+          >
+            <Text style={styles.buttonText}>Segunda Chance</Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#f7f7f7" },
-  title: { fontSize: 26, fontWeight: "bold", marginBottom: 20, color: "#333" },
-  subtitle: { fontSize: 18, marginVertical: 10, color: "#555" },
+  container: { 
+    flex: 1, 
+    padding: 20, 
+    backgroundColor: "#FFFFFF", // Cor de fundo mais clara
+  },
+  title: { 
+    fontSize: 28, // Aumenta o tamanho da fonte
+    fontWeight: "600", 
+    marginBottom: 20, 
+    color: "#000000", // Texto mais escuro
+    fontFamily: "San Francisco", // Fonte padrão do iOS
+  },
+  subtitle: { 
+    fontSize: 20, 
+    marginVertical: 10, 
+    color: "#333333", 
+    fontFamily: "San Francisco",
+  },
   input: { 
     borderWidth: 1, 
     padding: 12, 
     marginBottom: 20, 
-    borderRadius: 5, 
-    backgroundColor: "#fff" 
+    borderRadius: 10, // Bordas mais arredondadas
+    backgroundColor: "#F9F9F9", 
+    fontFamily: "San Francisco",
   },
-  buttonsContainer: { flexDirection: "row", marginBottom: 20 },
+  buttonsContainer: { 
+    flexDirection: "column", 
+    marginBottom: 22,
+    justifyContent: "space-between", // Melhor alinhamento
+  },
   button: { 
     flex: 1, 
-    backgroundColor: "#4CAF50", 
+    backgroundColor: "#007AFF", // Azul típico do iOS
     padding: 15, 
     marginRight: 10, 
-    borderRadius: 5,
-    alignItems: "center" 
+    borderRadius: 12, // Bordas mais arredondadas
+    alignItems: "center",
+    shadowColor: "#000", // Sombra sutil
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2, // Aumenta a profundidade da sombra
+    shadowRadius: 4,
+    elevation: 2,
   },
-  selectedButton: { backgroundColor: "#388E3C" },
-  buttonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
-  logContainer: { marginTop: 20, padding: 10, backgroundColor: "#f1f1f1", borderRadius: 5 },
-  logText: { fontSize: 16, color: "#333" },
+  selectedButton: { backgroundColor: "#0051A8" },
+  buttonText: { 
+    color: "#FFFFFF", 
+    fontSize: 18, 
+    fontWeight: "500",
+    fontFamily: "San Francisco",
+  },
+  logContainer: { 
+    marginTop: 20, 
+    padding: 10, 
+    backgroundColor: "#F1F1F1", 
+    borderRadius: 10,
+  },
+  logText: { 
+    fontSize: 16, 
+    color: "#333333",
+    fontFamily: "San Francisco",
+  },
 });
