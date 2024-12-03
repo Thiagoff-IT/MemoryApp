@@ -16,20 +16,8 @@ interface Processo {
 }
 
 export default function AlocacaoMemoria() {
-  const [particoes, setParticoes] = useState<Particao[]>([
-    { id: "A", tamanho: 0.3, disponivel: true },
-    { id: "B", tamanho: 0.5, disponivel: false, ocupadoAte: 3 },
-    { id: "C", tamanho: 0.8, disponivel: true },
-    { id: "D", tamanho: 0.4, disponivel: false, ocupadoAte: 4 },
-  ]);
-
-  const [processos, setProcessos] = useState<Processo[]>([
-    { id: "P1", chegada: 1, tamanho: 0.2, duracao: 3 },
-    { id: "P2", chegada: 3, tamanho: 0.1, duracao: 4 },
-    { id: "P3", chegada: 2, tamanho: 0.5, duracao: 2 },
-    { id: "P4", chegada: 4, tamanho: 0.4, duracao: 3 },
-  ]);
-
+  const [particoes, setParticoes] = useState<Particao[]>([]);
+  const [processos, setProcessos] = useState<Processo[]>([]);
   const [inputParticao, setInputParticao] = useState({ id: "", tamanho: "", estado: "livre" });
   const [inputProcesso, setInputProcesso] = useState({ id: "", chegada: "", tamanho: "", duracao: "" });
 
@@ -113,6 +101,31 @@ export default function AlocacaoMemoria() {
   const timelineBestFit = simularAlocacao("Best-Fit");
   const timelineWorstFit = simularAlocacao("Worst-Fit");
 
+  const renderTimeline = (timeline: { [key: number]: Particao[] }) => {
+    return (
+      <View style={styles.tableContainer}>
+        <View style={styles.row}>
+          <Text style={styles.headerCell}>Tempo</Text>
+          {particoes.map((particao) => (
+            <Text key={particao.id} style={styles.headerCell}>
+              Partição {particao.id}
+            </Text>
+          ))}
+        </View>
+        {Object.keys(timeline).map((tempo) => (
+          <View key={tempo} style={styles.row}>
+            <Text style={styles.cell}>{tempo}</Text>
+            {timeline[tempo].map((particao) => (
+              <Text key={particao.id} style={styles.cell}>
+                {particao.disponivel ? "Livre" : `Ocupado (${particao.ocupadoAte})`}
+              </Text>
+            ))}
+          </View>
+        ))}
+      </View>
+    );
+  };
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Alocação de Memória</Text>
@@ -180,70 +193,13 @@ export default function AlocacaoMemoria() {
       </View>
       <Text style={styles.subtitle}>Simulação - First-Fit</Text>
       <Text style={styles.description}>Procura a primeira partição que caiba.</Text>
-      <View style={styles.tableContainer}>
-        <View style={styles.row}>
-          <Text style={styles.headerCell}>Tempo</Text>
-          {particoes.map((particao) => (
-            <Text key={particao.id} style={styles.headerCell}>
-              Partição {particao.id}
-            </Text>
-          ))}
-        </View>
-        {Object.keys(timelineFirstFit).map((tempo) => (
-          <View key={tempo} style={styles.row}>
-            <Text style={styles.cell}>{tempo}</Text>
-            {timelineFirstFit[tempo].map((particao) => (
-              <Text key={particao.id} style={styles.cell}>
-                {particao.disponivel ? "Livre" : `Ocupado (${particao.ocupadoAte})`}
-              </Text>
-            ))}
-          </View>
-        ))}
-      </View>
+      {renderTimeline(timelineFirstFit)}
       <Text style={styles.subtitle}>Simulação - Best-Fit</Text>
       <Text style={styles.description}>Procura a menor partição disponível que caiba.</Text>
-      <View style={styles.tableContainer}>
-        <View style={styles.row}>
-          <Text style={styles.headerCell}>Tempo</Text>
-          {particoes.map((particao) => (
-            <Text key={particao.id} style={styles.headerCell}>
-              Partição {particao.id}
-            </Text>
-          ))}
-        </View>
-        {Object.keys(timelineBestFit).map((tempo) => (
-          <View key={tempo} style={styles.row}>
-            <Text style={styles.cell}>{tempo}</Text>
-            {timelineBestFit[tempo].map((particao) => (
-              <Text key={particao.id} style={styles.cell}>
-                {particao.disponivel ? "Livre" : `Ocupado (${particao.ocupadoAte})`}
-              </Text>
-            ))}
-          </View>
-        ))}
-      </View>
+      {renderTimeline(timelineBestFit)}
       <Text style={styles.subtitle}>Simulação - Worst-Fit</Text>
       <Text style={styles.description}>Procura a maior partição disponível que caiba.</Text>
-      <View style={styles.tableContainer}>
-        <View style={styles.row}>
-          <Text style={styles.headerCell}>Tempo</Text>
-          {particoes.map((particao) => (
-            <Text key={particao.id} style={styles.headerCell}>
-              Partição {particao.id}
-            </Text>
-          ))}
-        </View>
-        {Object.keys(timelineWorstFit).map((tempo) => (
-          <View key={tempo} style={styles.row}>
-            <Text style={styles.cell}>{tempo}</Text>
-            {timelineWorstFit[tempo].map((particao) => (
-              <Text key={particao.id} style={styles.cell}>
-                {particao.disponivel ? "Livre" : `Ocupado (${particao.ocupadoAte})`}
-              </Text>
-            ))}
-          </View>
-        ))}
-      </View>
+      {renderTimeline(timelineWorstFit)}
     </ScrollView>
   );
 }
